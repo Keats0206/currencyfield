@@ -5,18 +5,37 @@
 //  Created by Peter Keating on 9/18/20.
 //  Copyright © 2020 Peter Keating. All rights reserved.
 //
-
 import SwiftUI
 
 struct ContentView: View {
     @State var text = "$0:00"
-    
+    @State var cents = 0
+
     var body: some View {
-                
-        CurrencyInput(text: $text)
         
+        VStack{
+            
+            CurrencyInput(text: $text)
+            
+            Button(action: {
+                self.stringToCents(text: self.text)
+            }) {
+                Text("DEBUG: Print cents to console")
+            }
+            
+        }
+    }
+    
+   private func stringToCents(text: String){
+        let filteredChars = "$.,"
+        let string = text.filter { filteredChars.range(of: String($0)) == nil }
+        self.cents = Int(string)!
+        print(self.cents)
+        return
     }
 }
+
+
 
 struct CurrencyInput: UIViewRepresentable {
     @Binding var text: String // Declare a binding value
@@ -34,7 +53,7 @@ struct CurrencyInput: UIViewRepresentable {
     func makeCoordinator() -> Coordinator {
         return Coordinator(text: $text)
     }
-
+        
     class Coordinator: NSObject, UITextFieldDelegate {
         @Binding var text: String
 
@@ -51,7 +70,6 @@ struct CurrencyInput: UIViewRepresentable {
 }
 
 class CurrencyTextField: UITextField {
-    
 /// The numbers that have been entered in the text field
     private var enteredNumbers = ""
 
@@ -76,7 +94,8 @@ class CurrencyTextField: UITextField {
     override func deleteBackward() {
         enteredNumbers = String(enteredNumbers.dropLast())
         text = enteredNumbers.asCurrency(locale: locale)
-        // Call super so that the .editingChanged event gets fired, but we need to handle it differently, so we set the `didBackspace` flag first
+
+// Call super so that the .editingChanged event gets fired, but we need to handle it differently, so we set the `didBackspace` flag first
         didBackspace = true
         super.deleteBackward()
     }
@@ -95,7 +114,8 @@ class CurrencyTextField: UITextField {
     }
 }
 
-private extension Formatter {
+private extension Formatter
+{
     static let currency: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
